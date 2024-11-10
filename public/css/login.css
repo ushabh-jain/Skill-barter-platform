@@ -1,0 +1,77 @@
+.Background{
+    background-image: url("../images/Login.jpeg");
+    height: 100vh;
+    width: 100vw;
+    background-color: red;
+}
+
+
+.bg-cover-midsection {
+    background-image: url('images/HomePage.jpg');
+    background-size: cover;
+    background-position: center; 
+    background-repeat: no-repeat;
+    background-attachment: fixed; 
+    height: 100vh; 
+    width: 100%; 
+    position: relative;
+    z-index: 1; 
+}
+
+
+section.bg-zinc-900 {
+    background: url('images/background-image.jpg') no-repeat center center;
+    background-size: cover;
+}
+
+section.bg-zinc-900 .relative {
+    position: relative;
+    overflow: hidden;
+}
+
+section.bg-zinc-900 img {
+    transition: transform 0.3s ease;
+}
+
+section.bg-zinc-900 img:hover {
+    transform: scale(1.05);
+}
+
+section.bg-zinc-900 .absolute {
+    transition: opacity 0.3s ease;
+}
+
+section.bg-zinc-900 .absolute:hover {
+    opacity: 0.8;
+}
+
+
+.info-box {
+    background-color: #2d3748; 
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.info-box:hover {
+    transform: translateY(-5px);
+}
+
+.info-box-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #38b2ac; 
+}
+
+.info-box-text {
+    margin-top: 12px;
+    font-size: 1.125rem;
+    color: #edf2f7; 
+}
+
+
+
+
+    
