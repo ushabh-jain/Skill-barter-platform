@@ -1,19 +1,63 @@
 const express = require("express")
-const app=express()
-
 const loginModel = require("./models/login")
 const messageModel = require("./models/message")
-
 const cookieparser = require("cookie-parser");
 const path = require('path');
+const multer = require("multer");
+const bcrypt=require("bcrypt")
+const jwt=require("jsonwebtoken");
+
+
+const app=express()
 
 app.use(cookieparser());
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 app.use(express.static(path.join(__dirname,'public')))
+app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
-const bcrypt=require("bcrypt")
-const jwt=require("jsonwebtoken");
+
+
+
+
+
+
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, "public/uploads/"); 
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname)); 
+    },
+});
+
+
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) {
+        cb(null, true);
+    } else {
+        cb(new Error("Only image files are allowed!"), false);
+    }
+};
+
+
+const upload = multer({ storage: storage, fileFilter: fileFilter });
+
+app.post("/update-profile-pic", isLoggedIn, upload.single("profilePic"), async (req, res) => {
+    try {
+        const user = await loginModel.findOneAndUpdate(
+            { username: req.user.username },
+            { profilePic: req.file.filename }, 
+            { new: true }
+        );
+
+        res.redirect("/dashboard");
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("An error occurred while updating the profile picture.");
+    }
+});
 
 
 
@@ -33,13 +77,17 @@ app.post("/register",async (req,res)=>{
     if(user){
         return res.status(500).send("User Alrady Registerd")
     }
-
-
     const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z]).{8,}$/;
-    if (!passwordRegex.test(password)) {
-    //   return res.status(400).json({ error: 'Password must contain at least one uppercase letter, one digit, one special character, and one lowercase letter.' });
-        return res.render("index",{val:true})
-    }
+    
+  if (!passwordRegex.test(password)) {
+    return res.render('index', {
+      error: 'Password must have at least one uppercase letter, one number, and one special character.',
+    });
+  }
+
+  
+
+    
   
     
     const saltRounds=10;
@@ -187,10 +235,30 @@ app.get('/delete/:username',isLoggedIn,async (req,res)=>{
     res.redirect('/PersonalMessages')
 })
 
-app.get('/dashboard',isLoggedIn,async (req,res)=>{
-    let result= await loginModel.findOne({username:req.user.username})
-    res.render('dashboard',{result:result})
-})
+// app.get('/dashboard',isLoggedIn,async (req,res)=>{
+//     let result= await loginModel.findOne({username:req.user.username})
+//     res.render('dashboard',{result:result})
+// })
+
+app.get('/dashboard', isLoggedIn, async (req, res) => {
+    try {
+        // Retrieve the user from the database
+        const result = await loginModel.findOne({ username: req.user.username });
+
+        if (!result) {
+            return res.status(404).send('User not found');
+        }
+
+        // Pass the user object to the dashboard view
+        res.render('dashboard', { result });
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+
+
 
 app.get("/userdelete",isLoggedIn, async (req,res)=>{
     await loginModel.deleteOne({username:req.user.username})
